@@ -33,18 +33,6 @@ CREATE TABLE TemperaturesByState (
     Country VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE GlobalTemperatures (
-    dt DATE NOT NULL,
-    LandAverageTemperature DOUBLE NULL,
-    LandAverageTemperatureUncertainty DOUBLE NULL,
-    LandMaxTemperature DOUBLE NULL,
-    LandMaxTemperatureUncertainty DOUBLE NULL,
-    LandMinTemperature DOUBLE NULL,
-    LandMinTemperatureUncertainty DOUBLE NULL,
-    LandAndOceanAverageTemperature DOUBLE NULL,
-    LandAndOceanAverageTemperatureUncertainty DOUBLE NULL,
-    PRIMARY KEY (dt)
-);
 
 -- Import data from CSV into the TemperaturesByCountry table
 LOAD DATA INFILE 'E:\\climate change\\GlobalLandTemperaturesByCity.csv'
