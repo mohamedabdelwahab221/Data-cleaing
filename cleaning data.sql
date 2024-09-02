@@ -15,25 +15,6 @@ CREATE TABLE TemperaturesByCountry (
     Country VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE TemperaturesByMajorCity (
-    dt DATE NOT NULL,
-    AverageTemperature DOUBLE NULL,
-    AverageTemperatureUncertainty DOUBLE NULL,
-    City VARCHAR(255) NOT NULL,
-    Country VARCHAR(255) NOT NULL,
-    Latitude VARCHAR(255) NULL,
-    Longitude VARCHAR(255) NULL
-);
-
-CREATE TABLE TemperaturesByState (
-    dt DATE NOT NULL,
-    AverageTemperature DOUBLE NULL,
-    AverageTemperatureUncertainty DOUBLE NULL,
-    State VARCHAR(255) NOT NULL,
-    Country VARCHAR(255) NOT NULL
-);
-
-
 -- Import data from CSV into the TemperaturesByCountry table
 LOAD DATA INFILE 'E:\\climate change\\GlobalLandTemperaturesByCity.csv'
 INTO TABLE TemperaturesByCountry
