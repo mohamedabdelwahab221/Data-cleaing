@@ -32,6 +32,7 @@ This project focuses on practicing and enhancing data cleaning and importing ski
 
 ## Visuals and Supporting Materials
 - **SQL Scripts**: [[View SQL scripts](https://github.com/mohamedabdelwahab221/Data-cleaing/blob/main/cleaning%20data.sql)]
+- **Data source**: [[View Data source](https://www.kaggle.com/datasets/berkeleyearth/climate-change-earth-surface-temperature-data?select=GlobalLandTemperaturesByCity.csv)]
 
 ## Conclusion
 This project provided valuable hands-on experience in data cleaning and SQL. Despite the data being fake, it was very helpfull in developing practical skills for handling data cleaning tasks in a database environment.
