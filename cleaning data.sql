@@ -142,7 +142,7 @@ WHERE YEAR(dt) >= 1900
 GROUP BY YEAR(dt), city;
 
 
--- Create a view to visualize summer temperatures in Egypt
+-- Create a view to visualize summer temperatures in Egypt with rolling average
 CREATE VIEW temp_of_summer AS
 SELECT 
     YEAR(dt) AS year, 
@@ -150,11 +150,16 @@ SELECT
     AVG(AverageTemperature) AS average_temp_if_summer,
     AVG(AVG(AverageTemperature)) 
         OVER (PARTITION BY city 
-              ORDER BY YEAR(dt)) AS rolling_avg_temp
+              ORDER BY YEAR(dt)) AS rolling_avg_temp,
+	AVG(AVG(AverageTemperature)) 
+        OVER (PARTITION BY city 
+              ORDER BY YEAR(dt)
+              ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS rolling_avg_temp_3_Years,
+	AVG(AVG(AverageTemperature)) 
+        OVER (PARTITION BY city 
+              ORDER BY YEAR(dt)
+              ROWS BETWEEN 9 PRECEDING AND CURRENT ROW) AS rolling_avg_temp_10_Years
 FROM temperaturesbycity2
 WHERE (Country = 'Egypt' or Country like '%gypt%') and YEAR(dt) >= 1900 
   AND MONTH(dt) IN (6, 7, 8, 9)
 GROUP BY YEAR(dt), city;
-
--- Note: After visualizing the data in Power BI, it seems the dataset may be random or not real. 
--- The project provided valuable insights into data cleaning and importing processes.
