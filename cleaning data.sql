@@ -1,3 +1,4 @@
+
 CREATE TABLE TemperaturesByCity (
     dt DATE NOT NULL,
     AverageTemperature DOUBLE NULL,
@@ -8,16 +9,9 @@ CREATE TABLE TemperaturesByCity (
     Longitude VARCHAR(255) NULL
 );
 
-CREATE TABLE TemperaturesByCountry (
-    dt DATE NOT NULL,
-    AverageTemperature DOUBLE NULL,
-    AverageTemperatureUncertainty DOUBLE NULL,
-    Country VARCHAR(255) NOT NULL
-);
-
 -- Import data from CSV into the TemperaturesByCountry table
-LOAD DATA INFILE 'E:\\climate change\\GlobalLandTemperaturesByCity.csv'
-INTO TABLE TemperaturesByCountry
+LOAD DATA INFILE 'E:\\climate\\GlobalLandTemperaturesByCity.csv'
+INTO TABLE temperaturesbycity
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
@@ -74,74 +68,93 @@ WITH cte_temp AS (
 SELECT *
 FROM cte_temp;
 
--- Create a distinct copy of the TemperaturesByCity table to handle duplicates becasue we dont have pk
-CREATE TABLE TemperaturesByCity_Distinct LIKE TemperaturesByCity;
-INSERT INTO TemperaturesByCity_Distinct
-SELECT DISTINCT * 
-FROM TemperaturesByCity;
+-- Create a copy of the TemperaturesByCity table to handle duplicates becasue we cant update it
+CREATE TABLE TemperaturesByCity2 (
+    dt DATE NOT NULL,
+    AverageTemperature DOUBLE NULL,
+    AverageTemperatureUncertainty DOUBLE NULL,
+    City VARCHAR(255) NOT NULL,
+    Country VARCHAR(255) NOT NULL,
+    Latitude VARCHAR(255) NULL,
+    Longitude VARCHAR(255) NULL,
+    dup int
+);
 
--- Drop the original table and replace it with the distinct version
-DROP TABLE TemperaturesByCity;
-
--- Check for null values in the distinct table
+INSERT INTO temperaturesbycity2
 WITH cte_temp AS (
     SELECT *,
            ROW_NUMBER() OVER (PARTITION BY dt, AverageTemperature, AverageTemperatureUncertainty, City, Country ORDER BY dt ASC) AS dup
-    FROM TemperaturesByCity_Distinct
+    FROM TemperaturesByCity
 )
 SELECT *
-FROM cte_temp
-WHERE AverageTemperature IS NULL;
+FROM cte_temp;
 
--- Delete rows with null values in AverageTemperature
-DELETE FROM TemperaturesByCity_Distinct
-WHERE AverageTemperature IS NULL;
-
--- Check for remaining duplicates in the distinct table
-WITH cte_temp AS (
-    SELECT *,
-           ROW_NUMBER() OVER (PARTITION BY dt, AverageTemperature, AverageTemperatureUncertainty, City, Country ORDER BY dt ASC) AS dup
-    FROM TemperaturesByCity_Distinct
-)
+-- Check for remaining duplicates in the new table
 SELECT *
-FROM cte_temp
+FROM temperaturesbycity2
 WHERE dup > 1;
+
+-- Delete duplicates rows
+DELETE FROM temperaturesbycity2
+WHERE dup > 1;
+
+-- DELETE column dup
+ALTER TABLE temperaturesbycity2
+DROP COLUMN dup;
+
+
+-- Check for null values in the new table
+SELECT *
+FROM TemperaturesByCity2
+WHERE AverageTemperature IS NULL;
+
+-- Delete rows with null values in AverageTemperature Because its useless to our analyze that is based on AverageTemperature
+DELETE FROM TemperaturesByCity2
+WHERE AverageTemperature IS NULL;
+
 
 -- Create a temporary table for Egypt with cleaned data
 CREATE TEMPORARY TABLE egypt AS
 SELECT *
-FROM TemperaturesByCity_Distinct
-WHERE Country = 'Egypt';
+FROM TemperaturesByCity2
+WHERE Country = 'Egypt' or Country like '%gypt%';
 
 -- Calculate the average summer temperature for Cairo after 1900
 SELECT YEAR(dt) AS year, 
        city,
-       AVG(AverageTemperature) AS average_temp_if_summer
+       AVG(AverageTemperature) AS average_temp_if_summer,
+       AVG(AVG(AverageTemperature)) OVER (PARTITION BY city ORDER BY YEAR(dt)) AS rolling_avg
 FROM egypt
-WHERE city = 'Cairo' AND YEAR(dt) >= 1900 AND MONTH(dt) IN (6, 7, 8, 9)
-GROUP BY YEAR(dt)
-ORDER BY average_temp_if_summer DESC;
+WHERE  YEAR(dt) >= 1900 AND MONTH(dt) IN (6, 7, 8, 9)
+GROUP BY YEAR(dt);
 
 -- Calculate the average summer temperature for all cities in Egypt after 1900
-SELECT YEAR(dt) AS year, 
-       city,
-       AVG(AverageTemperature) AS average_temp_of_summer
+SELECT 
+    YEAR(dt) AS year, 
+    city,
+    AVG(AverageTemperature) AS average_temp_if_summer,
+    AVG(AVG(AverageTemperature)) 
+        OVER (PARTITION BY city 
+              ORDER BY YEAR(dt)) AS rolling_avg_temp
 FROM egypt
-WHERE YEAR(dt) >= 1900 AND MONTH(dt) IN (6, 7, 8, 9)
-GROUP BY YEAR(dt), city
-ORDER BY YEAR(dt) DESC;
+WHERE YEAR(dt) >= 1900 
+  AND MONTH(dt) IN (6, 7, 8, 9)
+GROUP BY YEAR(dt), city;
+
 
 -- Create a view to visualize summer temperatures in Egypt
 CREATE VIEW temp_of_summer AS
-SELECT YEAR(dt) AS year, 
-       city,
-       AVG(AverageTemperature) AS average_temp_of_summer
-FROM TemperaturesByCity_Distinct
-WHERE Country = 'Egypt'
-  AND YEAR(dt) >= 1900
+SELECT 
+    YEAR(dt) AS year, 
+    city,
+    AVG(AverageTemperature) AS average_temp_if_summer,
+    AVG(AVG(AverageTemperature)) 
+        OVER (PARTITION BY city 
+              ORDER BY YEAR(dt)) AS rolling_avg_temp
+FROM temperaturesbycity2
+WHERE (Country = 'Egypt' or Country like '%gypt%') and YEAR(dt) >= 1900 
   AND MONTH(dt) IN (6, 7, 8, 9)
-GROUP BY YEAR(dt), city
-ORDER BY YEAR(dt) DESC;
+GROUP BY YEAR(dt), city;
 
 -- Note: After visualizing the data in Power BI, it seems the dataset may be random or not real. 
 -- The project provided valuable insights into data cleaning and importing processes.
