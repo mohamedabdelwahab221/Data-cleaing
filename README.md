@@ -31,9 +31,8 @@ This project focuses on practicing and enhancing data cleaning and importing ski
 ## Visuals and Supporting Materials
 - **SQL Scripts**: [[View SQL scripts](https://github.com/mohamedabdelwahab221/Data-cleaing/blob/main/cleaning%20data.sql)]
 - **Data source**: [[View Data source](https://www.kaggle.com/datasets/berkeleyearth/climate-change-earth-surface-temperature-data?select=GlobalLandTemperaturesByCity.csv)]
-- **Data visualization of rolling average**
- ![image](https://github.com/user-attachments/assets/0aae6f37-f7f0-4aaf-9b3e-e493fba5b005)
---
-![image](https://github.com/user-attachments/assets/e1f1260f-8b78-4842-b5a4-3d5da1b9308d)
+- **Data visualization of rolling average and normal average**
+![image](https://github.com/user-attachments/assets/2b2723f5-b62f-48b2-b4cb-67a26c1b4662)
+
 ## Conclusion
 This project provided valuable hands-on experience in data cleaning and SQL. The purpose of the project was to practice real-world SQL techniques for data cleaning tasks in a database environment, which helped in developing practical skills applicable to real-world scenarios.
